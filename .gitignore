@@ -1,0 +1,4 @@
+node_modules/
+.env
+frontend/dist/
+backend/data/api_keys.json
