@@ -20,7 +20,7 @@ await fastify.register(cors, { origin: true })
 
 await fastify.register(swagger, {
   openapi: {
-    info: { title: 'Telegram Checker API', version: '1.0.0' },
+    info: { title: 'RyukChecker API', version: '1.0.0' },
     components: {
       securitySchemes: {
         apiKey: { type: 'apiKey', name: 'x-api-key', in: 'header' }
@@ -30,7 +30,7 @@ await fastify.register(swagger, {
 })
 
 await fastify.register(swaggerUi, {
-  routePrefix: '/docs',
+  routePrefix: '/api-docs',
   uiConfig: { docExpansion: 'list' }
 })
 
@@ -43,10 +43,10 @@ if (existsSync(frontendDist)) {
   await fastify.register(staticPlugin, {
     root: frontendDist,
     prefix: '/',
-    decorateReply: false,
   })
   fastify.setNotFoundHandler((req, reply) => {
-    if (!req.url.startsWith('/verify') && !req.url.startsWith('/admin') && !req.url.startsWith('/health') && !req.url.startsWith('/docs')) {
+    const api = ['/verify', '/admin', '/health', '/api-docs']
+    if (!api.some(p => req.url.startsWith(p))) {
       reply.sendFile('index.html')
     } else {
       reply.code(404).send({ error: 'Not found' })
@@ -55,5 +55,5 @@ if (existsSync(frontendDist)) {
 }
 
 await fastify.listen({ port: config.port, host: '0.0.0.0' })
-console.log(`\n🚀 API: http://localhost:${config.port}`)
-console.log(`📚 Docs: http://localhost:${config.port}/docs`)
+console.log(`\n RyukChecker API: http://localhost:${config.port}`)
+console.log(` Swagger: http://localhost:${config.port}/api-docs`)
