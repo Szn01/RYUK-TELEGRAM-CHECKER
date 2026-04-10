@@ -16,7 +16,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const fastify = Fastify({ logger: true })
 
-await fastify.register(cors, { origin: true })
+await fastify.register(cors, {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-api-key', 'x-admin-secret'],
+  credentials: true
+})
 
 await fastify.register(swagger, {
   openapi: {
@@ -55,5 +60,8 @@ if (existsSync(frontendDist)) {
 }
 
 await fastify.listen({ port: config.port, host: '0.0.0.0' })
-console.log(`\n RyukChecker API: http://localhost:${config.port}`)
-console.log(` Swagger: http://localhost:${config.port}/api-docs`)
+const address = fastify.server.address()
+const port = typeof address === 'string' ? config.port : address.port
+
+console.log(`\n RyukChecker API: http://0.0.0.0:${port}`)
+console.log(` Swagger: http://0.0.0.0:${port}/api-docs`)
