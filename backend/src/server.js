@@ -57,11 +57,19 @@ if (existsSync(frontendDist)) {
       reply.code(404).send({ error: 'Not found' })
     }
   })
+} else {
+  // Fallback root handler for health checks when running in standalone mode
+  fastify.get('/', async () => ({ status: 'ok', message: 'RyukChecker API is running' }))
 }
 
-await fastify.listen({ port: config.port, host: '0.0.0.0' })
-const address = fastify.server.address()
-const port = typeof address === 'string' ? config.port : address.port
+try {
+  await fastify.listen({ port: config.port, host: '0.0.0.0' })
+  const address = fastify.server.address()
+  const port = typeof address === 'string' ? config.port : address.port
 
-console.log(`\n RyukChecker API: http://0.0.0.0:${port}`)
-console.log(` Swagger: http://0.0.0.0:${port}/api-docs`)
+  console.log(`\n RyukChecker API: http://0.0.0.0:${port}`)
+  console.log(` Swagger: http://0.0.0.0:${port}/api-docs`)
+} catch (err) {
+  fastify.log.error(err)
+  process.exit(1)
+}
