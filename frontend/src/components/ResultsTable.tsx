@@ -4,7 +4,7 @@ type Result = {
   link: string
   status: 'online' | 'offline'
   name: string | null
-  type: 'bot' | 'group' | null
+  type: 'bot' | 'group' | 'channel' | null
   checkedAt: string
   error: string | null
 }

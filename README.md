@@ -1,6 +1,6 @@
 # Telegram Checker
 
-API HTTP + painel web para verificar em massa se bots e grupos do Telegram estão online ou offline.
+API HTTP + painel web para verificar em massa se bots, grupos e canais do Telegram estão online ou offline.
 
 ## Requisitos
 
@@ -61,7 +61,7 @@ Frontend dev: http://localhost:5173
 |---|---|---|---|
 | GET | /health | — | Status |
 | POST | /verify/single | x-api-key | Verificar 1 link |
-| POST | /verify/batch | x-api-key | Verificar até 500 links |
+| POST | /verify/batch | x-api-key | Verificar até 2000 links |
 | GET | /admin/keys | x-admin-secret | Listar keys |
 | POST | /admin/keys | x-admin-secret | Criar key |
 | DELETE | /admin/keys/:id | x-admin-secret | Revogar key |

@@ -33,13 +33,13 @@ curl -X POST http://localhost:3001/verify/single \
 
 ## POST /verify/batch
 
-Verifica múltiplos links em paralelo (máximo 500 por requisição).
+Verifica múltiplos links em paralelo (máximo 2000 por requisição).
 
 **Body:**
 ```json
 {
   "links": ["https://t.me/a", "t.me/b", "@c"],
-  "concurrency": 50
+  "concurrency": 500
 }
 ```
 
@@ -48,7 +48,7 @@ Verifica múltiplos links em paralelo (máximo 500 por requisição).
 curl -X POST http://localhost:3001/verify/batch \
   -H "x-api-key: tk_sua_chave" \
   -H "Content-Type: application/json" \
-  -d '{"links":["https://t.me/bot1","https://t.me/grupo1"],"concurrency":50}'
+  -d '{"links":["https://t.me/bot1","https://t.me/grupo1"],"concurrency":500}'
 ```
 
 **Node.js:**
@@ -56,7 +56,7 @@ curl -X POST http://localhost:3001/verify/batch \
 const res = await fetch('http://localhost:3001/verify/batch', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-api-key': 'tk_...' },
-  body: JSON.stringify({ links: ['https://t.me/username'], concurrency: 50 }),
+  body: JSON.stringify({ links: ['https://t.me/username'], concurrency: 500 }),
 })
 const data = await res.json()
 const online = data.results.filter(r => r.status === 'online')
@@ -67,7 +67,7 @@ const online = data.results.filter(r => r.status === 'online')
 import requests
 res = requests.post('http://localhost:3001/verify/batch',
   headers={'x-api-key': 'tk_...'},
-  json={'links': ['https://t.me/username'], 'concurrency': 50}
+  json={'links': ['https://t.me/username'], 'concurrency': 500}
 )
 data = res.json()
 online = [r for r in data['results'] if r['status'] == 'online']
@@ -91,4 +91,4 @@ online = [r for r in data['results'] if r['status'] == 'online']
 | 422 | Lista vazia ou body inválido |
 | 500 | Erro interno |
 
-**Limite máximo:** 500 links por requisição batch.
+**Limite máximo:** 2000 links por requisição batch.

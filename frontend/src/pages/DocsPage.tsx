@@ -3,7 +3,7 @@ export function DocsPage() {
     <div className="max-w-4xl mx-auto p-6 space-y-10 text-sm">
       <div>
         <h1 className="text-3xl font-bold text-white mb-1">RyukChecker — Documentação da API</h1>
-        <p className="text-gray-400">Verifique em massa se bots e grupos do Telegram estão online ou offline via HTTP.</p>
+        <p className="text-gray-400">Verifique em massa se bots, grupos e canais do Telegram estão online ou offline via HTTP.</p>
       </div>
 
       {/* Autenticação */}
@@ -39,19 +39,19 @@ https://t.me/bot?start=OP   (query params ignorados automaticamente)`}</pre>
       {/* POST /verify/batch */}
       <section>
         <h2 className="text-lg font-semibold text-blue-400 mb-3 border-b border-gray-800 pb-1">POST /verify/batch</h2>
-        <p className="text-gray-300 mb-3">Verifica múltiplos links em paralelo. Máximo de <b className="text-white">500</b> links por requisição.</p>
+        <p className="text-gray-300 mb-3">Verifica múltiplos links em paralelo. Máximo de <b className="text-white">2000</b> links por requisição.</p>
 
         <h3 className="text-gray-400 font-medium mb-2">Body</h3>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-yellow-300 overflow-x-auto text-xs">{`{
   "links": ["https://t.me/a", "t.me/b", "@c"],
-  "concurrency": 50
+  "concurrency": 500
 }`}</pre>
 
         <h3 className="text-gray-400 font-medium mt-4 mb-2">cURL</h3>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-green-300 overflow-x-auto text-xs">{`curl -X POST https://seu-servidor/verify/batch \\
   -H "x-api-key: tk_sua_chave" \\
   -H "Content-Type: application/json" \\
-  -d '{"links":["https://t.me/bot1","https://t.me/grupo1"],"concurrency":50}'`}</pre>
+  -d '{"links":["https://t.me/bot1","https://t.me/grupo1"],"concurrency":500}'`}</pre>
 
         <h3 className="text-gray-400 font-medium mt-4 mb-2">Node.js</h3>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-blue-300 overflow-x-auto text-xs">{`const res = await fetch('https://seu-servidor/verify/batch', {
@@ -62,7 +62,7 @@ https://t.me/bot?start=OP   (query params ignorados automaticamente)`}</pre>
   },
   body: JSON.stringify({
     links: ['https://t.me/username'],
-    concurrency: 50
+    concurrency: 500
   }),
 })
 const data = await res.json()
@@ -74,7 +74,7 @@ const offline = data.results.filter(r => r.status === 'offline')`}</pre>
 
 res = requests.post('https://seu-servidor/verify/batch',
   headers={'x-api-key': 'tk_...'},
-  json={'links': ['https://t.me/username'], 'concurrency': 50}
+  json={'links': ['https://t.me/username'], 'concurrency': 500}
 )
 data = res.json()
 online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
@@ -121,9 +121,9 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
             <tbody className="divide-y divide-gray-800">
               {[
                 ['link', 'string', 'Link original enviado'],
-                ['status', '"online" | "offline"', 'Status do bot/grupo'],
+                ['status', '"online" | "offline"', 'Status do bot, grupo ou canal'],
                 ['name', 'string | null', 'Nome real (null se offline)'],
-                ['type', '"bot" | "group" | null', 'Tipo detectado'],
+                ['type', '"bot" | "group" | "channel" | null', 'Tipo detectado'],
                 ['checkedAt', 'string', 'ISO 8601 timestamp da verificação'],
                 ['error', 'string | null', 'Mensagem de erro se offline'],
               ].map(([campo, tipo, desc]) => (
@@ -152,7 +152,7 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
             <tbody className="divide-y divide-gray-800">
               {[
                 ['401', 'x-api-key ausente ou inválida'],
-                ['422', 'Lista vazia, body inválido ou acima de 500 links'],
+                ['422', 'Lista vazia, body inválido ou acima de 2000 links'],
                 ['500', 'Erro interno do servidor'],
               ].map(([code, msg]) => (
                 <tr key={code} className="hover:bg-gray-900/50">
@@ -169,8 +169,8 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
       <section>
         <h2 className="text-lg font-semibold text-blue-400 mb-3 border-b border-gray-800 pb-1">Limites</h2>
         <ul className="space-y-1 text-gray-300">
-          <li>Máximo de <b className="text-white">500 links</b> por requisição batch</li>
-          <li>Concorrência padrão: <b className="text-white">50</b> — máximo: <b className="text-white">100</b></li>
+          <li>Máximo de <b className="text-white">2000 links</b> por requisição batch</li>
+          <li>Concorrência padrão: <b className="text-white">500</b> — máximo: <b className="text-white">500</b></li>
           <li>Timeout por link: <b className="text-white">8 segundos</b></li>
         </ul>
       </section>

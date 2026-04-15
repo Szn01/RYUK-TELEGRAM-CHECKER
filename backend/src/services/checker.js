@@ -33,6 +33,61 @@ export function parseLink(raw) {
   }
 }
 
+function normalizePageText(text) {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function detectTelegramType(pageText, { isInvite, username }) {
+  const usernameIsBot = username && username.toLowerCase().endsWith('_bot')
+  const hasBotCta = pageText.includes('start bot')
+  const mentionsInviteChannel = pageText.includes('you are invited to the channel') || pageText.includes('join channel')
+  const mentionsInviteGroup = pageText.includes('you are invited to the group') || pageText.includes('join group')
+  const hasSubscribers = pageText.includes(' subscriber') || pageText.includes(' subscribers')
+  const hasMembers = pageText.includes(' member') || pageText.includes(' members')
+
+  if (usernameIsBot || hasBotCta) return 'bot'
+  if (isInvite && mentionsInviteChannel) return 'channel'
+  if (isInvite && mentionsInviteGroup) return 'group'
+  if (hasSubscribers) return 'channel'
+  if (hasMembers) return 'group'
+  return isInvite ? null : 'group'
+}
+
+export function extractTelegramPageMeta(html, parsed) {
+  const $ = cheerio.load(html)
+  const title = $('.tgme_page_title').text().trim()
+  const pageText = normalizePageText($.text())
+  const type = detectTelegramType(pageText, parsed)
+
+  if (!title) {
+    return {
+      status: 'offline',
+      name: null,
+      type,
+      error: parsed.isInvite ? 'Convite inválido ou expirado' : 'Perfil não encontrado',
+    }
+  }
+
+  if (type === 'bot' && !(pageText.includes('start bot') || pageText.includes('tgme_action_button_new'))) {
+    return {
+      status: 'offline',
+      name: null,
+      type: 'bot',
+      error: 'Bot desativado (sem botão START BOT)',
+    }
+  }
+
+  return {
+    status: 'online',
+    name: title,
+    type,
+    error: null,
+  }
+}
+
 export async function checkTelegramLink(rawLink, timeoutMs = 8000) {
   const checkedAt = new Date().toISOString()
 
@@ -60,32 +115,8 @@ export async function checkTelegramLink(rawLink, timeoutMs = 8000) {
       return { link: rawLink, status: 'offline', name: null, type: null, checkedAt, error: `HTTP ${statusCode}` }
     }
 
-    const $ = cheerio.load(html)
-
-    if (parsed.isInvite) {
-      const title = $('.tgme_page_title').text().trim()
-      if (title) {
-        return { link: rawLink, status: 'online', name: title, type: 'group', checkedAt, error: null }
-      }
-      return { link: rawLink, status: 'offline', name: null, type: 'group', checkedAt, error: 'Grupo inválido ou expirado' }
-    }
-
-    const title = $('.tgme_page_title').text().trim()
-
-    if (!title) {
-      return { link: rawLink, status: 'offline', name: null, type: null, checkedAt, error: 'Perfil não encontrado' }
-    }
-
-    const pageText = html.toLowerCase()
-    const hasStartBot = pageText.includes('start bot') || pageText.includes('tgme_action_button_new')
-    const usernameIsBot = parsed.username && parsed.username.toLowerCase().endsWith('_bot')
-
-    if (usernameIsBot && !hasStartBot) {
-      return { link: rawLink, status: 'offline', name: null, type: 'bot', checkedAt, error: 'Bot desativado (sem botão START BOT)' }
-    }
-
-    const type = (hasStartBot || usernameIsBot) ? 'bot' : 'group'
-    return { link: rawLink, status: 'online', name: title, type, checkedAt, error: null }
+    const meta = extractTelegramPageMeta(html, parsed)
+    return { link: rawLink, checkedAt, ...meta }
 
   } catch (err) {
     const isTimeout = err.code === 'UND_ERR_CONNECT_TIMEOUT' || err.message?.includes('timeout')

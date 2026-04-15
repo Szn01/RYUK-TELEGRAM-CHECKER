@@ -6,7 +6,7 @@
 {
   "link": "https://t.me/username",
   "status": "online",
-  "name": "Nome do Bot ou Grupo",
+  "name": "Nome do Bot, Grupo ou Canal",
   "type": "bot",
   "checkedAt": "2026-04-07T12:00:00.000Z",
   "error": null
@@ -18,7 +18,7 @@
 | link | string | Link original enviado |
 | status | string | `"online"` ou `"offline"` |
 | name | string\|null | Nome real (null se offline) |
-| type | string\|null | `"bot"`, `"group"` ou `null` |
+| type | string\|null | `"bot"`, `"group"`, `"channel"` ou `null` |
 | checkedAt | string | ISO 8601 timestamp |
 | error | string\|null | Mensagem de erro se offline |
 
@@ -37,6 +37,7 @@ const online = results.filter(r => r.status === 'online')
 const offline = results.filter(r => r.status === 'offline')
 const bots = results.filter(r => r.type === 'bot')
 const grupos = results.filter(r => r.type === 'group')
+const canais = results.filter(r => r.type === 'channel')
 const linksOnline = online.map(r => r.link).join('\n')
 ```
 

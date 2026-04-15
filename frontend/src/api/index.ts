@@ -9,7 +9,7 @@ export async function verifySingle(link: string, apiKey: string) {
   return res.json()
 }
 
-export async function verifyBatch(links: string[], apiKey: string, concurrency = 50) {
+export async function verifyBatch(links: string[], apiKey: string, concurrency = 500) {
   const res = await fetch(`${BASE}/verify/batch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },

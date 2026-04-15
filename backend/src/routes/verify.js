@@ -56,15 +56,15 @@ export async function verifyRoutes(fastify) {
   fastify.post('/verify/batch', {
     preHandler: requireApiKey,
     schema: {
-      description: 'Verifica múltiplos links do Telegram em paralelo (máx 500)',
+      description: 'Verifica múltiplos links do Telegram em paralelo (máx 2000)',
       tags: ['verify'],
       security: [{ apiKey: [] }],
       body: {
         type: 'object',
         required: ['links'],
         properties: {
-          links: { type: 'array', items: { type: 'string' }, maxItems: 500 },
-          concurrency: { type: 'integer', minimum: 1, maximum: 100, default: 50 }
+          links: { type: 'array', items: { type: 'string' }, maxItems: 2000 },
+          concurrency: { type: 'integer', minimum: 1, maximum: 500, default: 500 }
         }
       }
     }

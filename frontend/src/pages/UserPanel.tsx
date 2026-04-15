@@ -5,7 +5,7 @@ import { ResultsTable } from '../components/ResultsTable'
 export function UserPanel() {
   const [apiKey, setApiKey] = useState(localStorage.getItem('apiKey') || '')
   const [linksText, setLinksText] = useState('')
-  const [concurrency, setConcurrency] = useState(50)
+  const [concurrency, setConcurrency] = useState(500)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
@@ -22,7 +22,7 @@ export function UserPanel() {
     const links = linksText.split('\n').map(l => l.trim()).filter(Boolean)
     if (!links.length) return setError('Cole ao menos um link')
     if (!apiKey) return setError('Informe sua API Key')
-    if (links.length > 500) return setError('Máximo 500 links por vez')
+    if (links.length > 2000) return setError('Máximo 2000 links por vez')
 
     setError('')
     setLoading(true)
@@ -60,12 +60,12 @@ export function UserPanel() {
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Concorrência (1-100)</label>
+          <label className="block text-sm text-gray-400 mb-1">Concorrência (1-500)</label>
           <input
             type="number"
             value={concurrency}
             onChange={e => setConcurrency(Number(e.target.value))}
-            min={1} max={100}
+            min={1} max={500}
             className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
@@ -73,7 +73,7 @@ export function UserPanel() {
 
       <div className="mb-4">
         <label className="block text-sm text-gray-400 mb-1">
-          Links — {lineCount > 0 ? `${lineCount} detectados` : '1 por linha, pode misturar bots e grupos'}
+          Links — {lineCount > 0 ? `${lineCount} detectados` : '1 por linha, pode misturar bots, grupos e canais'}
         </label>
         <textarea
           value={linksText}
