@@ -40,19 +40,85 @@ function normalizePageText(text) {
     .trim()
 }
 
-function detectTelegramType(pageText, { isInvite, username }) {
-  const usernameIsBot = username && username.toLowerCase().endsWith('_bot')
-  const hasBotCta = pageText.includes('start bot')
-  const mentionsInviteChannel = pageText.includes('you are invited to the channel') || pageText.includes('join channel')
-  const mentionsInviteGroup = pageText.includes('you are invited to the group') || pageText.includes('join group')
-  const hasSubscribers = pageText.includes(' subscriber') || pageText.includes(' subscribers')
-  const hasMembers = pageText.includes(' member') || pageText.includes(' members')
+/**
+ * Detecta o tipo da entidade Telegram usando seletores CSS do HTML (mais confiável)
+ * e fallback para texto da página em múltiplos idiomas.
+ * @param {import('cheerio').CheerioAPI} $ - instância do cheerio com o HTML carregado
+ * @param {string} pageText - texto completo da página normalizado (lowercase)
+ * @param {{ isInvite: boolean, username: string|null }} parsed - link parseado
+ * @returns {'bot'|'channel'|'group'|null}
+ */
+function detectTelegramType($, pageText, { isInvite, username }) {
+  // --- Verificação via seletores CSS do Telegram (mais confiável, independe de idioma) ---
 
-  if (usernameIsBot || hasBotCta) return 'bot'
-  if (isInvite && mentionsInviteChannel) return 'channel'
-  if (isInvite && mentionsInviteGroup) return 'group'
-  if (hasSubscribers) return 'channel'
-  if (hasMembers) return 'group'
+  // Texto do botão de ação principal da página (Join Channel, Join Group, Start Bot, etc.)
+  const actionBtnText = $('a.tgme_action_button_new').text().toLowerCase().trim()
+
+  // Elemento .tgme_page_extra contém a contagem de subscribers/members
+  const extraText = $('.tgme_page_extra').text().toLowerCase()
+
+  // Subscribers — só aparece em CANAIS (multilíngue)
+  const hasSubscribersEl = extraText.includes('subscriber')
+    || extraText.includes('assinante')
+    || extraText.includes('abonado')
+    || extraText.includes('подписчик')
+    || extraText.includes('aboné')
+    || extraText.includes('สมาชิก')
+
+  // Members — aparece em GRUPOS (multilíngue)
+  const hasMembersEl = extraText.includes('member')
+    || extraText.includes('membro')
+    || extraText.includes('miembro')
+    || extraText.includes('участник')
+    || extraText.includes('membre')
+
+  // Botão aponta para canal
+  const hasJoinChannelBtn = actionBtnText.includes('join channel')
+    || actionBtnText.includes('preview channel')
+    || actionBtnText.includes('entrar no canal')
+    || actionBtnText.includes('view channel')
+
+  // Botão aponta para grupo
+  const hasJoinGroupBtn = actionBtnText.includes('join group')
+    || actionBtnText.includes('entrar no grupo')
+    || actionBtnText.includes('send message')
+
+  // Botão aponta para bot
+  const hasStartBotBtn = actionBtnText.includes('start bot')
+    || actionBtnText.includes('open bot')
+
+  // --- Verificação via username ---
+  const usernameIsBot = username && username.toLowerCase().endsWith('_bot')
+
+  // --- Verificação via texto da página (fallback multilíngue) ---
+  const mentionsInviteChannel = pageText.includes('you are invited to the channel')
+    || pageText.includes('join channel')
+    || pageText.includes('preview channel')
+    || pageText.includes('entrar no canal')
+
+  const mentionsInviteGroup = pageText.includes('you are invited to the group')
+    || pageText.includes('join group')
+    || pageText.includes('entrar no grupo')
+
+  const hasSubscribersText = pageText.includes(' subscriber')
+    || pageText.includes(' subscribers')
+    || pageText.includes(' assinante')
+    || pageText.includes(' assinantes')
+    || pageText.includes(' подписчик')
+    || pageText.includes(' abonado')
+
+  const hasMembersText = pageText.includes(' member')
+    || pageText.includes(' members')
+    || pageText.includes(' membro')
+    || pageText.includes(' membros')
+    || pageText.includes(' участник')
+
+  // --- Lógica de decisão em ordem de prioridade ---
+  if (usernameIsBot || hasStartBotBtn) return 'bot'
+  if (hasJoinChannelBtn || hasSubscribersEl || hasSubscribersText || (isInvite && mentionsInviteChannel)) return 'channel'
+  if (hasJoinGroupBtn || hasMembersEl || hasMembersText || (isInvite && mentionsInviteGroup)) return 'group'
+
+  // Último fallback: não identificado como invite = assume group
   return isInvite ? null : 'group'
 }
 
@@ -60,7 +126,7 @@ export function extractTelegramPageMeta(html, parsed) {
   const $ = cheerio.load(html)
   const title = $('.tgme_page_title').text().trim()
   const pageText = normalizePageText($.text())
-  const type = detectTelegramType(pageText, parsed)
+  const type = detectTelegramType($, pageText, parsed)
 
   if (!title) {
     return {
@@ -71,12 +137,12 @@ export function extractTelegramPageMeta(html, parsed) {
     }
   }
 
-  if (type === 'bot' && !(pageText.includes('start bot') || pageText.includes('tgme_action_button_new'))) {
+  if (type === 'bot' && $('a.tgme_action_button_new').length === 0) {
     return {
       status: 'offline',
       name: null,
       type: 'bot',
-      error: 'Bot desativado (sem botão START BOT)',
+      error: 'Bot desativado (sem botão de ação)',
     }
   }
 

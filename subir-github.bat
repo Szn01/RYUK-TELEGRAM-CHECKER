@@ -58,8 +58,8 @@ git status --short
 echo.
 
 echo [5/6] Commit...
-set /p MSG="Mensagem (Enter = Update): "
-if "%MSG%"=="" set MSG=Update
+set MSG=Channel-update
+echo   Mensagem do commit: %MSG%
 git commit -m "%MSG%"
 if errorlevel 1 (
     echo [AVISO] Nada para commitar ou commit falhou. Continuando com push...

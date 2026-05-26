@@ -1,0 +1,18 @@
+[2026-05-26T06:52:14.211Z] ==================================================
+[2026-05-26T06:52:14.212Z]       INICIALIZADOR INTELIGENTE TELEGRAM CHECKER
+[2026-05-26T06:52:14.212Z] ==================================================
+[2026-05-26T06:52:14.226Z] Data/Hora de início: 26/05/2026, 03:52:14
+[2026-05-26T06:52:14.226Z] Pasta de Logs: C:\Operação\telegram-checker\Logs
+[2026-05-26T06:52:14.226Z] Log desta sessão: sessao_2026-05-26_03-52-14.log
+[2026-05-26T06:52:14.226Z] Versão do Node: v24.11.1
+[2026-05-26T06:52:14.226Z] Plataforma: win32
+[2026-05-26T06:52:14.226Z] ==================================================
+
+[2026-05-26T06:52:14.226Z] [INFO] Pasta frontend/dist existente. Ignorando build automático (caso queira atualizar o frontend, exclua a pasta "dist" e inicie o sistema novamente).
+[2026-05-26T06:52:14.226Z] [SISTEMA] Iniciando servidor do backend...
+[2026-05-26T06:52:15.641Z] {"level":30,"time":1779778335641,"pid":32828,"hostname":"Szn","msg":"Server listening at http://0.0.0.0:3002"}
+
+[2026-05-26T06:52:15.642Z] 
+ RyukChecker API: http://0.0.0.0:3002
+ Swagger: http://0.0.0.0:3002/api-docs
+
