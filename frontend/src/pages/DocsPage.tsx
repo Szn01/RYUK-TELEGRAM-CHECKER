@@ -14,6 +14,38 @@ export function DocsPage() {
         <p className="text-gray-400 mt-2">Obtenha sua API Key com o administrador do sistema.</p>
       </section>
 
+      {/* Escopo de membros */}
+      <section>
+        <h2 className="text-lg font-semibold text-blue-400 mb-3 border-b border-gray-800 pb-1">Escopo de contagem de membros</h2>
+        <p className="text-gray-300 mb-3">Todas as rotas aceitam o campo opcional <code className="text-blue-300 bg-gray-900 px-1 rounded">scope</code> no body, controlando quais campos de membros voltam na resposta.</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs border border-gray-800 rounded-lg">
+            <thead className="bg-gray-900 text-gray-400 uppercase">
+              <tr>
+                <th className="px-4 py-2 text-left">scope</th>
+                <th className="px-4 py-2 text-left">Retorna</th>
+                <th className="px-4 py-2 text-left">Total no batch</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {[
+                ['"members" (padrão)', 'members (membros totais)', 'totalMembers'],
+                ['"active"', 'membersOnline (membros ativos)', 'totalMembersOnline'],
+                ['"both"', 'members + membersOnline', 'totalMembers + totalMembersOnline'],
+              ].map(([scope, retorna, total]) => (
+                <tr key={scope} className="hover:bg-gray-900/50">
+                  <td className="px-4 py-2 text-blue-300 font-mono">{scope}</td>
+                  <td className="px-4 py-2 text-gray-300">{retorna}</td>
+                  <td className="px-4 py-2 text-yellow-300 font-mono">{total}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-gray-400 mt-3">Para contagem em massa recorrente (ex: diária), use o padrão (<code className="text-blue-300 bg-gray-900 px-1 rounded">scope: "members"</code> ou omitido) e leia <code className="text-blue-300 bg-gray-900 px-1 rounded">totalMembers</code> do batch.</p>
+        <p className="text-gray-500 mt-2 text-xs"><code className="text-blue-300">membersOnline</code> só existe em <b className="text-white">grupos</b> — canais e bots sempre retornam <code className="text-blue-300">null</code> nesse campo, pois a página pública do Telegram não expõe "online" para eles.</p>
+      </section>
+
       {/* POST /verify/single */}
       <section>
         <h2 className="text-lg font-semibold text-blue-400 mb-3 border-b border-gray-800 pb-1">POST /verify/single</h2>
@@ -27,7 +59,7 @@ https://t.me/+HASH          (links de convite)
 https://t.me/bot?start=OP   (query params ignorados automaticamente)`}</pre>
 
         <h3 className="text-gray-400 font-medium mt-4 mb-2">Body</h3>
-        <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-yellow-300 overflow-x-auto text-xs">{`{ "link": "https://t.me/username" }`}</pre>
+        <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-yellow-300 overflow-x-auto text-xs">{`{ "link": "https://t.me/username", "scope": "members" }`}</pre>
 
         <h3 className="text-gray-400 font-medium mt-4 mb-2">cURL</h3>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-green-300 overflow-x-auto text-xs">{`curl -X POST https://seu-servidor/verify/single \\
@@ -44,7 +76,8 @@ https://t.me/bot?start=OP   (query params ignorados automaticamente)`}</pre>
         <h3 className="text-gray-400 font-medium mb-2">Body</h3>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-yellow-300 overflow-x-auto text-xs">{`{
   "links": ["https://t.me/a", "t.me/b", "@c"],
-  "concurrency": 500
+  "concurrency": 500,
+  "scope": "members"
 }`}</pre>
 
         <h3 className="text-gray-400 font-medium mt-4 mb-2">cURL</h3>
@@ -84,17 +117,20 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
       <section>
         <h2 className="text-lg font-semibold text-blue-400 mb-3 border-b border-gray-800 pb-1">Formato da Resposta (batch)</h2>
 
+        <p className="text-gray-400 mb-2 text-xs">Exemplo com <code className="text-blue-300 bg-gray-900 px-1 rounded">scope</code> padrão (<code className="text-blue-300">"members"</code>):</p>
         <pre className="bg-gray-900 border border-gray-800 rounded p-4 text-yellow-300 overflow-x-auto text-xs">{`{
   "total": 3,
   "online": 2,
   "offline": 1,
   "duration_ms": 640,
+  "totalMembers": 1225308,
   "results": [
     {
-      "link": "https://t.me/meubot_bot",
+      "link": "https://t.me/meucanal",
       "status": "online",
-      "name": "Meu Bot",
-      "type": "bot",
+      "name": "Meu Canal",
+      "type": "channel",
+      "members": 1200000,
       "checkedAt": "2026-04-08T12:00:00.000Z",
       "error": null
     },
@@ -103,6 +139,7 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
       "status": "offline",
       "name": null,
       "type": "group",
+      "members": null,
       "checkedAt": "2026-04-08T12:00:00.000Z",
       "error": "Página não encontrada (404)"
     }
@@ -124,6 +161,8 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
                 ['status', '"online" | "offline"', 'Status do bot, grupo ou canal'],
                 ['name', 'string | null', 'Nome real (null se offline)'],
                 ['type', '"bot" | "group" | "channel" | null', 'Tipo detectado'],
+                ['members', 'int | null', 'Membros totais (assinantes em canal, membros em grupo) — conforme scope'],
+                ['membersOnline', 'int | null', 'Membros ativos — só em grupos, conforme scope'],
                 ['checkedAt', 'string', 'ISO 8601 timestamp da verificação'],
                 ['error', 'string | null', 'Mensagem de erro se offline'],
               ].map(([campo, tipo, desc]) => (
@@ -172,6 +211,7 @@ online = [r for r in data['results'] if r['status'] == 'online']`}</pre>
           <li>Máximo de <b className="text-white">2000 links</b> por requisição batch</li>
           <li>Concorrência padrão: <b className="text-white">500</b> — máximo: <b className="text-white">500</b></li>
           <li>Timeout por link: <b className="text-white">8 segundos</b></li>
+          <li><code className="text-blue-300 bg-gray-900 px-1 rounded">scope</code> padrão: <b className="text-white">"members"</b> (membros totais)</li>
         </ul>
       </section>
     </div>
