@@ -35,7 +35,10 @@ export function UserPanel() {
         setError(data.error)
       } else {
         setResults(data.results || [])
-        setStats({ total: data.total, online: data.online, offline: data.offline, duration_ms: data.duration_ms })
+        setStats({
+          total: data.total, online: data.online, offline: data.offline, duration_ms: data.duration_ms,
+          totalMembers: data.totalMembers, totalMembersOnline: data.totalMembersOnline,
+        })
       }
     } catch (e: any) {
       setError(e.message || 'Erro ao conectar com a API')

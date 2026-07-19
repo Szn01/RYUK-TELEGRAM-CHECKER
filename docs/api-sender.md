@@ -7,13 +7,25 @@ Todas as rotas `/verify/*` exigem o header:
 x-api-key: tk_sua_chave_aqui
 ```
 
+## Escopo de contagem de membros (`scope`)
+
+Todas as rotas aceitam o campo opcional `scope` no body, controlando quais campos de membros voltam:
+
+| scope | Retorna | Total no batch |
+|---|---|---|
+| `"members"` (padrão) | membros totais (`members`) | `totalMembers` |
+| `"active"` | membros ativos/online (`membersOnline`) | `totalMembersOnline` |
+| `"both"` | ambos | `totalMembers` + `totalMembersOnline` |
+
+Se omitido, assume `"members"` — ideal para contagem em massa recorrente.
+
 ## POST /verify/single
 
 Verifica um único link.
 
 **Body:**
 ```json
-{ "link": "https://t.me/username" }
+{ "link": "https://t.me/username", "scope": "members" }
 ```
 
 **Formatos aceitos:**
@@ -39,7 +51,8 @@ Verifica múltiplos links em paralelo (máximo 2000 por requisição).
 ```json
 {
   "links": ["https://t.me/a", "t.me/b", "@c"],
-  "concurrency": 500
+  "concurrency": 500,
+  "scope": "members"
 }
 ```
 
@@ -82,6 +95,8 @@ online = [r for r in data['results'] if r['status'] == 'online']
 | offline | int | Quantidade offline |
 | results | array | Resultados individuais |
 | duration_ms | int | Tempo total em ms |
+| totalMembers | int | Soma dos membros totais dos online (scope `members`/`both`) |
+| totalMembersOnline | int | Soma dos membros ativos dos online (scope `active`/`both`) |
 
 ## Códigos de Erro
 

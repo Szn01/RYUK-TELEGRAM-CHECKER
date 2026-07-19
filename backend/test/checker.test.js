@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { extractTelegramPageMeta } from '../src/services/checker.js'
+import { extractTelegramPageMeta, parseMemberCount, parseOnlineCount } from '../src/services/checker.js'
 
 test('classifies invite group pages as online group', () => {
   const html = `
@@ -12,7 +12,7 @@ test('classifies invite group pages as online group', () => {
 
   assert.deepEqual(
     extractTelegramPageMeta(html, { isInvite: true, username: null }),
-    { status: 'online', name: 'Grupo VIP', type: 'group', error: null }
+    { status: 'online', name: 'Grupo VIP', type: 'group', members: 4945, membersOnline: 4, error: null }
   )
 })
 
@@ -26,7 +26,7 @@ test('classifies invite channel pages as online channel', () => {
 
   assert.deepEqual(
     extractTelegramPageMeta(html, { isInvite: true, username: null }),
-    { status: 'online', name: 'Canal VIP', type: 'channel', error: null }
+    { status: 'online', name: 'Canal VIP', type: 'channel', members: 12304, membersOnline: null, error: null }
   )
 })
 
@@ -39,6 +39,23 @@ test('classifies public channel pages as online channel', () => {
 
   assert.deepEqual(
     extractTelegramPageMeta(html, { isInvite: false, username: 'telegram' }),
-    { status: 'online', name: 'Telegram News', type: 'channel', error: null }
+    { status: 'online', name: 'Telegram News', type: 'channel', members: 1200000, membersOnline: null, error: null }
   )
+})
+
+test('parseMemberCount extrai membros totais de canais, grupos e bots', () => {
+  assert.equal(parseMemberCount('10 040 954 subscribers'), 10040954)   // NBSP
+  assert.equal(parseMemberCount('25 308 members, 530 online'), 25308)  // pega total, não online
+  assert.equal(parseMemberCount('@BotFather\n7 084 047 monthly users'), 7084047)
+  assert.equal(parseMemberCount('12 304 assinantes'), 12304)
+  assert.equal(parseMemberCount(''), null)
+  assert.equal(parseMemberCount('sem numeros aqui'), null)
+})
+
+test('parseOnlineCount extrai membros ativos só de grupos', () => {
+  assert.equal(parseOnlineCount('25 308 members, 530 online'), 530)
+  assert.equal(parseOnlineCount('9 864 members, 1 268 online'), 1268) // NBSP no online
+  assert.equal(parseOnlineCount('10 040 954 subscribers'), null)      // canal não tem online
+  assert.equal(parseOnlineCount('7 084 047 monthly users'), null)     // bot não tem online
+  assert.equal(parseOnlineCount(''), null)
 })

@@ -5,13 +5,15 @@ type Result = {
   status: 'online' | 'offline'
   name: string | null
   type: 'bot' | 'group' | 'channel' | null
+  members: number | null
+  membersOnline: number | null
   checkedAt: string
   error: string | null
 }
 
 export function ResultsTable({ results, stats }: {
   results: Result[]
-  stats?: { total: number; online: number; offline: number; duration_ms: number }
+  stats?: { total: number; online: number; offline: number; duration_ms: number; totalMembers?: number; totalMembersOnline?: number }
 }) {
   if (!results.length) return null
 
@@ -31,6 +33,12 @@ export function ResultsTable({ results, stats }: {
           <span className="text-gray-400">Total: <b className="text-white">{stats.total}</b></span>
           <span className="text-green-400">Online: <b>{stats.online}</b></span>
           <span className="text-red-400">Offline: <b>{stats.offline}</b></span>
+          {stats.totalMembers != null && (
+            <span className="text-blue-300">Membros: <b>{stats.totalMembers.toLocaleString('pt-BR')}</b></span>
+          )}
+          {stats.totalMembersOnline != null && (
+            <span className="text-blue-300/70">Ativos: <b>{stats.totalMembersOnline.toLocaleString('pt-BR')}</b></span>
+          )}
           <span className="text-gray-500">{(stats.duration_ms / 1000).toFixed(1)}s</span>
           {stats.online > 0 && (
             <button
@@ -48,6 +56,8 @@ export function ResultsTable({ results, stats }: {
             <tr>
               <th className="px-4 py-2 text-left">Status</th>
               <th className="px-4 py-2 text-left">Tipo</th>
+              <th className="px-4 py-2 text-left">Membros</th>
+              <th className="px-4 py-2 text-left">Ativos</th>
               <th className="px-4 py-2 text-left">Nome</th>
               <th className="px-4 py-2 text-left">Link</th>
               <th className="px-4 py-2 text-left">Erro</th>
@@ -58,6 +68,8 @@ export function ResultsTable({ results, stats }: {
               <tr key={i} className="hover:bg-gray-900/50">
                 <td className="px-4 py-2"><StatusBadge status={r.status} /></td>
                 <td className="px-4 py-2 text-gray-400 capitalize">{r.type || '—'}</td>
+                <td className="px-4 py-2 text-gray-300 tabular-nums">{r.members != null ? r.members.toLocaleString('pt-BR') : '—'}</td>
+                <td className="px-4 py-2 text-gray-400 tabular-nums">{r.membersOnline != null ? r.membersOnline.toLocaleString('pt-BR') : '—'}</td>
                 <td className="px-4 py-2 text-white max-w-xs truncate">{r.name || '—'}</td>
                 <td className="px-4 py-2">
                   <a href={r.link} target="_blank" rel="noreferrer"

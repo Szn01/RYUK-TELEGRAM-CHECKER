@@ -1,19 +1,21 @@
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
-export async function verifySingle(link: string, apiKey: string) {
+type Scope = 'members' | 'active' | 'both'
+
+export async function verifySingle(link: string, apiKey: string, scope: Scope = 'both') {
   const res = await fetch(`${BASE}/verify/single`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-    body: JSON.stringify({ link }),
+    body: JSON.stringify({ link, scope }),
   })
   return res.json()
 }
 
-export async function verifyBatch(links: string[], apiKey: string, concurrency = 500) {
+export async function verifyBatch(links: string[], apiKey: string, concurrency = 500, scope: Scope = 'both') {
   const res = await fetch(`${BASE}/verify/batch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-    body: JSON.stringify({ links, concurrency }),
+    body: JSON.stringify({ links, concurrency, scope }),
   })
   return res.json()
 }

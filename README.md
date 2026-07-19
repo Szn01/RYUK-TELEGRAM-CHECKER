@@ -67,6 +67,16 @@ Frontend dev: http://localhost:5173
 | DELETE | /admin/keys/:id | x-admin-secret | Revogar key |
 | GET | /docs | — | Swagger UI |
 
+## Contagem de membros
+
+As rotas `/verify/*` retornam a contagem de membros junto do status, controlada pelo campo `scope` (opcional) no body:
+
+- `scope: "members"` (padrão) → `members` (membros totais) + `totalMembers` somado no batch
+- `scope: "active"` → `membersOnline` (membros ativos/online) + `totalMembersOnline`
+- `scope: "both"` → os dois
+
+Para contagem em massa recorrente (ex: diária), use o padrão e leia `totalMembers` do batch. Detalhes em [docs/api-sender.md](docs/api-sender.md) e [docs/api-receiver.md](docs/api-receiver.md).
+
 ## Formatos de link aceitos
 
 - `https://t.me/username`
