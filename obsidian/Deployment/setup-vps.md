@@ -1,57 +1,70 @@
 # VPS Deployment Setup Guide
 
-This guide explains how to build and run the RYUK-TELEGRAM-CHECKER containers manually on a VPS.
+This guide explains how to build and run the RYUK-TELEGRAM-CHECKER containers on a VPS with full data persistence.
 
 ## Prerequisites
-- Docker installed on the VPS
+- Docker & Docker Compose installed on the VPS
 - Access to the source code
 
-## 1. Backend Setup
+---
 
-### Build the Backend Image
-Run this from the project root:
+## 0. Serviços Necessários na VPS
+- **Nenhum banco de dados extra é necessário** (nada de MySQL, Postgres, Redis, etc.).
+- **Nenhum microserviço adicional é necessário**.
+- Você continua gerenciando **apenas os mesmos 2 serviços**:
+  1. **Backend API** (Fastify)
+  2. **Frontend** (Nginx / React)
+
+A única mudança é que o serviço do **Backend** agora precisa ter um volume/pasta persistente montado no caminho `/app/data`.
+
+---
+
+## Método Recomendado para Easypanel / Painéis Web
+
+1. Mantenha os seus 2 serviços normais (Backend e Frontend).
+2. No serviço do **Backend**, vá na aba **Mounts / Volumes**:
+   - Adicione um volume montado no destino: `/app/data`
+3. Não precisa alterar nada no serviço do Frontend.
+
+---
+
+## Método Manual: Docker CLI (Sem Compose)
+
+### 1. Criar Volume e Rede
 ```bash
-docker build -t ryuk-backend ./backend
+docker volume create ryuk_data
+docker network create ryuk-network
 ```
 
-### Run the Backend Container
+### 2. Backend Setup
 ```bash
+docker build -t ryuk-backend ./backend
+
 docker run -d \
-  --name ryuk-backend \
+  --name backend \
+  --network ryuk-network \
   -p 3000:3000 \
+  -v ryuk_data:/app/data \
   -e ADMIN_SECRET=your_secret_key \
-  -e MAX_CONCURRENCY=100 \
+  -e MAX_CONCURRENCY=500 \
   ryuk-backend
 ```
 
-## 2. Frontend Setup
+> [!IMPORTANT]
+> A flag `-v ryuk_data:/app/data` garante que todas as API Keys criadas e as configurações persistam mesmo quando o container for destruído, reconstruído ou atualizado.
 
-### Build the Frontend Image
-Run this from the project root:
+### 3. Frontend Setup
 ```bash
 docker build -t ryuk-frontend ./frontend
-```
 
-### Run the Frontend Container
-We link the frontend to the backend or ensure they share the same host network if needed.
-```bash
 docker run -d \
-  --name ryuk-frontend \
+  --name frontend \
+  --network ryuk-network \
   -p 80:80 \
   ryuk-frontend
 ```
 
-> [!IMPORTANT]
-> Since we are not using `docker-compose`, the Nginx `proxy_pass` in the Frontend `nginx.conf` needs to point to the correct Backend IP. If both are on the same machine, you can use the host's IP or create a docker network:
->
-> 1. `docker network create ryuk-network`
-> 2. `docker run ... --network ryuk-network --name backend ...`
-> 3. `docker run ... --network ryuk-network --name frontend ...`
->
-> The Nginx config is already set to `proxy_pass http://backend:3000;`. Using a docker network and naming the backend container `backend` will make this work automatically.
+---
 
-## Summary Checklist
-1. Build images.
-2. Create network.
-3. Run backend first.
-4. Run frontend.
+## Deploy no Easypanel
+Se você utiliza Easypanel, consulte o guia detalhado em [persistence-and-volumes.md](file:///Users/miguelfigueiredo/Dev/RYUK-TELEGRAM-CHECKER/obsidian/Deployment/persistence-and-volumes.md) para adicionar o Mount no caminho `/app/data`.

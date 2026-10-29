@@ -1,4 +1,5 @@
 import { listKeys, createKey, revokeKey, getStats } from '../services/apiKeys.js'
+import { getSettings, updateSettings } from '../config.js'
 import { requireAdmin } from '../middleware/auth.js'
 
 export async function adminRoutes(fastify) {
@@ -26,4 +27,29 @@ export async function adminRoutes(fastify) {
   })
 
   fastify.get('/admin/stats', hook, async () => getStats())
+
+  fastify.get('/admin/settings', hook, async () => getSettings())
+
+  fastify.put('/admin/settings', {
+    ...hook,
+    schema: {
+      body: {
+        type: 'object',
+        properties: {
+          adminSecret: { type: 'string' },
+          defaultConcurrency: { type: 'number' },
+          maxConcurrency: { type: 'number' },
+          requestTimeoutMs: { type: 'number' },
+          port: { type: 'number' },
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const updated = updateSettings(request.body)
+      return reply.send(updated)
+    } catch (err) {
+      return reply.code(400).send({ error: err.message })
+    }
+  })
 }

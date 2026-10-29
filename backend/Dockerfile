@@ -19,6 +19,11 @@ EXPOSE 3000
 # Set environment variables (defaults)
 ENV PORT=3000
 ENV NODE_ENV=production
+ENV DATA_DIR=/app/data
+
+# Persistent data directory
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
 
 # Command to run the application
 CMD ["npm", "start"]

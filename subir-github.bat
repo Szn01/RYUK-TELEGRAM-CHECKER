@@ -49,6 +49,7 @@ if exist "frontend\package-lock.json" git add -f "frontend\package-lock.json" 2>
 if exist "backend\.env.example" git add -f "backend\.env.example" 2>nul
 if exist "backend\data\.gitkeep" git add -f "backend\data\.gitkeep" 2>nul
 if exist "README.md" git add "README.md"
+if exist "docker-compose.yml" git add "docker-compose.yml"
 if exist "start.bat" git add "start.bat"
 echo   Reforco concluido.
 echo.

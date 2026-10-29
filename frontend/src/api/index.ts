@@ -50,3 +50,19 @@ export async function adminGetStats(adminSecret: string) {
   })
   return res.json()
 }
+
+export async function adminGetSettings(adminSecret: string) {
+  const res = await fetch(`${BASE}/admin/settings`, {
+    headers: { 'x-admin-secret': adminSecret },
+  })
+  return res.json()
+}
+
+export async function adminUpdateSettings(settings: any, adminSecret: string) {
+  const res = await fetch(`${BASE}/admin/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret },
+    body: JSON.stringify(settings),
+  })
+  return res.json()
+}
